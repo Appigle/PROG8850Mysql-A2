@@ -25,10 +25,12 @@
 
 ### Workflow Overview
 
+![github-workflows](./screenshots/github-workflows.png)
+
 - The workflow is triggered on every push to the `main` branch.
 - It sets up a MySQL 8.0 service and creates a test database.
 - Installs Python and the `mysql-connector-python` library.
-- Executes all SQL scripts found in the `sql` directory against the test database.
+- Executes all SQL scripts found in the `sql` directory against the test database. ![github-workflows-db-output](./screenshots/github-workflows-db-output.png)
 
 ### Testing Steps
 
