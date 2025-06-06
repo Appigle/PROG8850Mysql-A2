@@ -1,0 +1,50 @@
+name: MySQL CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup_and_run_sql:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpass
+          MYSQL_DATABASE: testdb
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent" \
+          --health-interval=10s \
+          --health-timeout=5s \
+          --health-retries=3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..30}; do
+            if mysqladmin ping -h127.0.0.1 -uroot -prootpass; then
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Install Python and mysql-connector-python
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip
+          pip3 install mysql-connector-python
+
+      - name: Run SQL scripts
+        env:
+          MYSQL_PWD: rootpass
+        run: |
+          for sqlfile in $(find ./sql -name '*.sql'); do
+            echo "Running $sqlfile"
+            mysql -h 127.0.0.1 -uroot testdb < "$sqlfile"
+          done
